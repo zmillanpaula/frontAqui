@@ -1,103 +1,205 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from "react";
+import LoginModal from "@/components/LoginModal";
 
-export default function Home() {
+export default function Page() {
+  const [productos, setProductos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [filtros, setFiltros] = useState({
+    categoriaId: "",
+    precioMin: "",
+    precioMax: "",
+    nombre: "",
+    color: "",
+  });
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const fetchProductos = () => {
+    const params = new URLSearchParams();
+    if (filtros.categoriaId) params.append("categoriaId", filtros.categoriaId);
+    if (filtros.precioMin) params.append("precioMin", filtros.precioMin);
+    if (filtros.precioMax) params.append("precioMax", filtros.precioMax);
+    if (filtros.nombre.trim()) params.append("nombre", filtros.nombre);
+    if (filtros.color.trim()) params.append("color", filtros.color);
+
+    const url = `${
+      process.env.NEXT_PUBLIC_API_URL
+    }/api/productos/filtrar?${params.toString()}`;
+
+    fetch(url)
+      .then((res) => res.json())
+      .then(setProductos)
+      .catch((err) => {
+        console.error("Error al obtener productos:", err);
+        setError("No se pudieron cargar los productos.");
+      });
+  };
+
+  const fetchCategorias = () => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categorias`)
+      .then((res) => res.json())
+      .then(setCategorias)
+      .catch((err) => console.error("Error al obtener categorías:", err));
+  };
+
+  useEffect(() => {
+    fetchProductos();
+    fetchCategorias();
+  }, []);
+
+  const handleChange = (e) => {
+    setFiltros({ ...filtros, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    fetchProductos();
+  };
+
+  const handleClear = () => {
+    setFiltros({
+      categoriaId: "",
+      precioMin: "",
+      precioMax: "",
+      nombre: "",
+      color: "",
+    });
+    fetchProductos();
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <>
+      {/* Banner principal */}
+      <div className="text-center mb-4">
+        <img
+          src="/img/banner-aquiesta.png"
+          alt="AQUÍESTÁ - Encuentra lo que buscas"
+          className="img-fluid"
+          style={{ maxHeight: "250px", objectFit: "cover", width: "100%" }}
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Botón de login */}
+      <div className="d-flex justify-content-end p-3">
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => setShowModal(true)}
+        >
+          Iniciar sesión
+        </button>
+      </div>
+
+      {/* Contenido principal */}
+      <div className="container mt-4">
+        <div className="row">
+          {/* Filtros laterales */}
+          <aside className="col-md-3 mb-4">
+            <h5>Filtros</h5>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <label className="form-label">Categoría</label>
+                <select
+                  name="categoriaId"
+                  className="form-select"
+                  value={filtros.categoriaId}
+                  onChange={handleChange}
+                >
+                  <option value="">Todas</option>
+                  {categorias.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Nombre</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  className="form-control"
+                  value={filtros.nombre}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Color</label>
+                <input
+                  type="text"
+                  name="color"
+                  className="form-control"
+                  value={filtros.color}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Precio mínimo</label>
+                <input
+                  type="number"
+                  name="precioMin"
+                  className="form-control"
+                  value={filtros.precioMin}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Precio máximo</label>
+                <input
+                  type="number"
+                  name="precioMax"
+                  className="form-control"
+                  value={filtros.precioMax}
+                  onChange={handleChange}
+                />
+              </div>
+              <button type="submit" className="btn btn-primary w-100">
+                Aplicar filtros
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-secondary w-100 mt-2"
+                onClick={handleClear}
+              >
+                Limpiar filtros
+              </button>
+            </form>
+          </aside>
+
+          {/* Listado de productos */}
+          <main className="col-md-9">
+            <h2>Productos disponibles</h2>
+            <p className="text-muted">
+              {productos.length === 0
+                ? "No se encontraron productos con los filtros seleccionados."
+                : `Se encontraron ${productos.length} producto${
+                    productos.length > 1 ? "s" : ""
+                  }.`}
+            </p>
+            {error && <p className="text-danger">{error}</p>}
+            <div className="row">
+              {productos.map((producto) => (
+                <div className="col-md-4 mb-4" key={producto.id}>
+                  <div className="card h-100">
+                    <div className="card-body d-flex flex-column">
+                      <h5 className="card-title">{producto.nombre}</h5>
+                      <p className="card-text">{producto.descripcion}</p>
+                      <p className="fw-bold">${producto.precio}</p>
+                      <button className="btn btn-success mt-auto">
+                        Comprar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </main>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+
+      {/* Modal de Login */}
+      <LoginModal show={showModal} onClose={() => setShowModal(false)} />
+    </>
   );
 }

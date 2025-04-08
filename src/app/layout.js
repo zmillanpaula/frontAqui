@@ -1,5 +1,6 @@
+import "bootstrap/dist/css/bootstrap.min.css"; // <-- importa bootstrap aquí
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "./globals.css"; // <-- tu CSS personalizado
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +21,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`main-body ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>
