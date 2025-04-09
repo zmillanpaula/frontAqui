@@ -44,6 +44,9 @@ export default function LoginModal({ show, onClose }) {
       );
 
       if (res.ok) {
+        const usuario = await res.json(); // 👈 ahora sí, porque backend devuelve JSON
+        console.log("Usuario logueado:", usuario);
+        localStorage.setItem("usuario", JSON.stringify(usuario));
         setMensaje("Login exitoso");
         onClose();
       } else {
@@ -77,7 +80,17 @@ export default function LoginModal({ show, onClose }) {
             </div>
 
             <div className="modal-body px-4 pt-3">
-              {mensaje && <div className="alert alert-info">{mensaje}</div>}
+              {mensaje && (
+                <div
+                  className={`alert ${
+                    mensaje.toLowerCase().includes("exitoso")
+                      ? "alert-success"
+                      : "alert-danger"
+                  }`}
+                >
+                  {mensaje}
+                </div>
+              )}
 
               <div className="mb-3">
                 <label className="form-label">Correo electrónico</label>
