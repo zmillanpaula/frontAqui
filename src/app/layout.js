@@ -1,7 +1,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import BootstrapClient from "@/components/BootstrapClient"; // 👈 importamos el componente nuevo
+import BootstrapClient from "@/components/BootstrapClient";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,9 +24,7 @@ export default function RootLayout({ children }) {
       <body
         className={`main-body ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <BootstrapClient />{" "}
-        {/* 👈 Esto carga bootstrap.bundle.min.js solo en cliente */}
-        {children}
+        <BootstrapClient /> {children}
       </body>
     </html>
   );

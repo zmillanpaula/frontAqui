@@ -25,6 +25,10 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
+    fetchProductos();
+  }, [filtros]);
+
+  useEffect(() => {
     const usuarioStr = localStorage.getItem("usuario");
     if (usuarioStr) {
       setUsuarioLogueado(JSON.parse(usuarioStr));
@@ -76,7 +80,6 @@ export default function Page() {
       nombre: "",
       color: "",
     });
-    fetchProductos();
   };
 
   const agregarAlCarrito = (producto) => {
@@ -88,7 +91,8 @@ export default function Page() {
 
     const yaAgregado = carrito.find((item) => item.id === producto.id);
     if (!yaAgregado) {
-      setCarrito([...carrito, producto]);
+      const productoConCantidad = { ...producto, cantidad: 1 };
+      setCarrito([...carrito, productoConCantidad]);
     } else {
       alert("Este producto ya está en el carrito");
     }
